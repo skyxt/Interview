@@ -41,12 +41,24 @@ public class OddAndEven {
         }
 
         void lockPrint() {
-
+            lock.lock();
+            while (count < limit) {
+                System.out.println("Thread: " + Thread.currentThread().getName() + "   --number:" + count++);
+                condition.signalAll();
+                if (count < limit) {
+                    try {
+                        System.out.println("count:" + count + "    thread:" + Thread.currentThread().getName() + "will wait");
+                        condition.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            lock.unlock();
         }
     }
 
-
-//  /**第一种:采用监听器实现*/
+  /**第一种:采用监听器实现*/
 //    public static void main(String[] args) {
 //        MyThread myThread = new MyThread(0, 100);
 //        Thread thread1 = new Thread(null, myThread::synchronizedPrint, "Thread1");
@@ -56,25 +68,27 @@ public class OddAndEven {
 //            thread2.start();
 //            thread1.join();
 //            thread2.join();
-//            System.out.println("xxx");
+//            System.out.println("结束");
+
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
 //    }
 
-
+    /**第二种:采用ReentrantLock实现*/
     public static void main(String[] args) {
         MyThread myThread = new MyThread(0, 100);
-        Thread thread1 = new Thread(null, myThread::synchronizedPrint, "Thread1");
-        Thread thread2 = new Thread(null, myThread::synchronizedPrint, "Thread2");
+        Thread thread1 = new Thread(null, myThread::lockPrint, "Thread1");
+        Thread thread2 = new Thread(null, myThread::lockPrint, "Thread2");
         try {
             thread1.start();
             thread2.start();
-            thread1.join();
-            thread2.join();
-            System.out.println("xxx");
+//            thread1.join();
+//            thread2.join();
+            System.out.println("结束");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 }
